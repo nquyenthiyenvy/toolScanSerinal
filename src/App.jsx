@@ -9,6 +9,7 @@ function App() {
   const [toast, setToast] = useState(null);
   const [flash, setFlash] = useState(null);
   const [activeTab, setActiveTab] = useState("scan");
+  const [scanMode, setScanMode] = useState("strict"); // "strict" | "length-only"
   const [genStart, setGenStart] = useState("");
   const [genCount, setGenCount] = useState("10");
 
@@ -86,19 +87,22 @@ function App() {
 
       // Logic kiểm tra
       if (standardLength === null) {
-        // Lấy mã đầu tiên làm chuẩn (độ dài + pattern chữ/số)
-        const pattern = value
-          .split("")
-          .map((ch) =>
-            /\d/.test(ch)
-              ? "\\d"
-              : /[A-Za-z]/.test(ch)
-                ? "[A-Za-z]"
-                : ch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-          )
-          .join("");
+        // Lấy mã đầu tiên làm chuẩn
         setStandardLength(value.length);
-        setStandardPattern(new RegExp(`^${pattern}$`));
+        if (scanMode === "strict") {
+          // Tạo pattern chữ/số từ mã đầu tiên
+          const pattern = value
+            .split("")
+            .map((ch) =>
+              /\d/.test(ch)
+                ? "\\d"
+                : /[A-Za-z]/.test(ch)
+                  ? "[A-Za-z]"
+                  : ch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+            )
+            .join("");
+          setStandardPattern(new RegExp(`^${pattern}$`));
+        }
         addSerial(value);
       } else {
         // Kiểm tra lỗi
@@ -108,7 +112,11 @@ function App() {
           handleError(
             `SAI ĐỊNH DẠNG: Yêu cầu ${standardLength} ký tự (Mã quét: ${value.length})`,
           );
-        } else if (standardPattern && !standardPattern.test(value)) {
+        } else if (
+          scanMode === "strict" &&
+          standardPattern &&
+          !standardPattern.test(value)
+        ) {
           handleError(
             `SAI ĐỊNH DẠNG: Mã không đúng loại (chữ/số không khớp chuẩn)`,
           );
@@ -167,6 +175,21 @@ function App() {
       setToast(null);
       if (inputRef.current) inputRef.current.focus();
     }
+  };
+
+  // Khi đổi chế độ scan, reset chuẩn để mã đầu tiên mới thiết lập lại
+  const handleScanModeChange = (mode) => {
+    setScanMode(mode);
+    setStandardLength(null);
+    setStandardPattern(null);
+    setSerials([]);
+    showToast(
+      mode === "strict"
+        ? "Chế độ Nghiêm ngặt: kiểm tra độ dài + cấu trúc chữ/số"
+        : "Chế độ Chỉ độ dài: chỉ kiểm tra độ dài + trùng lặp",
+      "success",
+    );
+    setTimeout(() => inputRef.current?.focus(), 10);
   };
 
   const handleGenerate = () => {
@@ -272,6 +295,25 @@ function App() {
 
       {activeTab === "scan" ? (
         <div className="scanner-input-container">
+          <div className="scan-mode-toggle">
+            <span className="scan-mode-label">Chế độ kiểm tra:</span>
+            <div className="scan-mode-options">
+              <button
+                className={`mode-btn ${scanMode === "strict" ? "active" : ""}`}
+                onClick={() => scanMode !== "strict" && handleScanModeChange("strict")}
+                title="Kiểm tra độ dài + cấu trúc chữ/số + trùng lặp"
+              >
+                🔒 Nghiêm ngặt
+              </button>
+              <button
+                className={`mode-btn ${scanMode === "length-only" ? "active" : ""}`}
+                onClick={() => scanMode !== "length-only" && handleScanModeChange("length-only")}
+                title="Chỉ kiểm tra độ dài + trùng lặp"
+              >
+                📏 Chỉ độ dài
+              </button>
+            </div>
+          </div>
           <input
             ref={inputRef}
             type="text"
