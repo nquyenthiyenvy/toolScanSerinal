@@ -162,6 +162,18 @@ function App() {
       });
   };
 
+  const handleDeleteSerial = (indexToDelete) => {
+    setSerials((prev) => {
+      const next = prev.filter((_, i) => i !== indexToDelete);
+      // Nếu xoá hết thì reset chuẩn
+      if (next.length === 0) {
+        setStandardLength(null);
+        setStandardPattern(null);
+      }
+      return next;
+    });
+  };
+
   const handleReset = () => {
     if (
       window.confirm(
@@ -412,7 +424,31 @@ function App() {
           {serials.map((serial, index) => (
             <li key={`${serial}-${index}`} className="serial-item">
               <span className="serial-number">{serial}</span>
-              <span className="serial-index">#{serials.length - index}</span>
+              <span className="serial-item-right">
+                <span className="serial-index">#{serials.length - index}</span>
+                <button
+                  className="delete-row-btn"
+                  title="Xoá mã này"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteSerial(index);
+                  }}
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                </button>
+              </span>
             </li>
           ))}
           {serials.length === 0 && (

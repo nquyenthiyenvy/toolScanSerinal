@@ -224,9 +224,41 @@
   font-size: 1.1rem;
 }
 
+.serial-item-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .serial-index {
   color: var(--text-secondary);
   font-size: 0.875rem;
+}
+
+.delete-row-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.serial-item:hover .delete-row-btn {
+  opacity: 1;
+}
+
+.delete-row-btn:hover {
+  background: var(--error-bg);
+  color: var(--error);
+  transform: scale(1.1);
 }
 
 @keyframes slideIn {
